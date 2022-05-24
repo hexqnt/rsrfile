@@ -1,6 +1,6 @@
 # Собираем модули
 
-from distutils.core import setup, Extension
+from setuptools import setup, Extension, find_packages
 import pathlib
 import os
 
@@ -42,5 +42,4 @@ setup(
         "Bug Reports": "https://github.com/HexQuant/rsrfile/issues",
         "Source": "https://github.com/HexQuant/rsrfile",
     },
-    ext_modules=module,
-    package_data={"": ["*.h"]})
+    ext_modules=module)
