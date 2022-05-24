@@ -105,6 +105,7 @@ static void RSRFile_dealloc(RSRFile *self)
     CHECK_NULL_DECREF(self->pdf);
     CHECK_NULL_DECREF(self->mcs);
     CHECK_NULL_DECREF(self->mod_mcs);
+    CHECK_NULL_DECREF(self->Events);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -129,6 +130,7 @@ static PyObject *RSRFile_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->cdf = NULL;
         self->mcs = NULL;
         self->mod_mcs = NULL;
+        self->Events = NULL;
     }
     return (PyObject *)self;
 }
@@ -583,6 +585,69 @@ static PyObject *mod_mcs_get(RSRFile *self, void *closure)
     return self->mod_mcs;
 }
 
+static PyObject *events_get(RSRFile *self, void *closure)
+{
+    if (self->Events == NULL)
+    {
+        const uint32_t count = self->headers[EVENT_OFFSET].Record;
+        if (count > 0)
+        {
+            PyObject *dict_obj = PyDict_New();
+
+            const EventStruct *const events =
+                &self->mapped[self->headers[EVENT_OFFSET].StartByte];
+
+            const BEEventStruct *const beevent_struct =
+                &self->mapped[self->headers[BEVENT_OFFSET].StartByte];
+
+            const CCFEventStruct *const ccfevent_struct =
+                &self->mapped[self->headers[CCFEVENT_OFFSET].StartByte];
+
+            const MODEventStruct *const modevent_struct =
+                &self->mapped[self->headers[MODEVENT_OFFSET].StartByte];
+
+            for (uint32_t i = 1; i < count; i++)
+            {
+                EventStruct event = events[i];
+                const uint32_t event_index = event.Index;
+                const EventType event_type = event.EventType;
+
+                const char *name;
+                switch (event_type)
+                {
+                case BASIC_EVENT:
+                    name = beevent_struct[event_index].Name;
+                    break;
+                case CCF_EVENT:
+                    name = ccfevent_struct[event_index].Name;
+                    break;
+                case MOD_EVENT:
+                    name = modevent_struct[event_index].Name;
+                    break;
+                default:
+                    name = "None type";
+                    // return NULL;
+                }
+
+                const size_t len = trim(name, MAX_ID_LEN);
+
+                PyObject *value_obj = PyStructSequence_New(&MCSEventType);
+                PyStructSequence_SetItem(value_obj, 0, PyFloat_FromDouble(event.Mean));
+                PyStructSequence_SetItem(value_obj, 1, PyFloat_FromDouble(event.fW));
+
+                PyDict_SetItem(dict_obj, Py_BuildValue("s#", name, len), value_obj);
+            }
+            self->Events = dict_obj;
+        }
+        else
+        {
+            Py_RETURN_NONE;
+        }
+    }
+    Py_INCREF(self->Events);
+    return self->Events;
+}
+
 static PyGetSetDef RSRFile_getsets[] = {
     {"mcs_summary", (getter)mcs_summary_get, NULL,
      "Minimal cut sets summary information", /* doc */
@@ -642,6 +707,10 @@ static PyGetSetDef RSRFile_getsets[] = {
 
     {"mod_mcs", (getter)mod_mcs_get, NULL,
      "Mod. minimal cut sets", /* doc */
+     NULL /* closure */},
+
+    {"events", (getter)events_get, NULL,
+     "Dictionary of events used in the minimum sections", /* doc */
      NULL /* closure */},
 
     {NULL}};

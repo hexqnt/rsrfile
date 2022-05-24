@@ -34,6 +34,8 @@ PyMODINIT_FUNC PyInit_rsrfile(void)
     PyStructSequence_InitType(&UNCSummaryType, &UNCSummaryType_desc);
     PyStructSequence_InitType(&TdepSummaryType, &TdepSummaryType_desc);
 
+    PyStructSequence_InitType(&MCSEventType, &MCSEventType_desc);
+
     if (PyType_Ready(&RSRFileType) < 0)
     {
         return NULL;

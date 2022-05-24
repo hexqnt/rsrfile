@@ -12,7 +12,7 @@ def opened_file():
         fileobj.close()
 
 def test_MCSSummary(opened_file):
-    mcs_summary = opened_file.MCSSummary
+    mcs_summary = opened_file.mcs_summary
     assert mcs_summary.DateTime == datetime(2022, 5, 13, 8, 18, 4) 
     assert mcs_summary.InputFormat==1
     assert mcs_summary.AcaseType==33
@@ -61,7 +61,7 @@ def test_MCSSummary(opened_file):
     assert mcs_summary.RunTimeMCS==482.537
 
 def test_UNCSummary(opened_file):
-    unc_summary = opened_file.UNCSummary
+    unc_summary = opened_file.unc_summary
     assert unc_summary.DateTime == datetime(2022, 5, 13, 8, 18, 38)
     assert unc_summary.CalcType==4
     assert unc_summary.Time==0.0
@@ -80,6 +80,6 @@ def test_TimeDepSummary(opened_file):
     pass
 
 def test_unc_cdf_pdf(opened_file):
-    #assert  opened_file.unc_pdf[2] == (0.0, 4.981830252434798e-11) 
-    assert  opened_file.unc_cdf[2] == (0.0, 4.981830252434798e-11)
+    assert  opened_file.cdf[5] == (2.1310711009901784e-10, 4.0)
+    assert  opened_file.pdf[7] == (1.9607196597072234e-10, 485738042.12764394)
 

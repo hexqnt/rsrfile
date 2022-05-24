@@ -14,6 +14,7 @@
 #include "ResSummaryMiscStruct.h"
 #include "ImpTable.h"
 #include "MCSStruct.h"
+#include "MCSEvent.h"
 
 #include "structures.h"
 
@@ -35,6 +36,7 @@ typedef struct
     PyObject *cdf; 
     PyObject *mcs; 
     PyObject *mod_mcs; 
+    PyObject *Events;
     PyObject *filepath;
     PyObject *mode;
     uint8_t *mapped;

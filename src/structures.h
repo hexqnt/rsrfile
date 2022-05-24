@@ -252,12 +252,22 @@ typedef struct
 
 } __attribute__((__packed__)) EventStruct;
 
+typedef enum
+{
+    CONTINUOSLY = 1, /* Continuously monitored, repairable */
+    PERIODICALLY = 2, /* Periodically tested */
+    CONST_PROBABILITY = 3, /* Constant probability */
+    CONST_MISSION_TIME = 4, /* Component with fixed mission time */
+    CONST_FREQUENCY = 5, /* Constant frequency */
+    UNREPAIRABLE =6 /* Unrepairable component  */
+} RALABILITY_MODEL;
+
 typedef struct
 {
     uint32_t Index;
-    char Name[MAX_ID_LEN];
-    uint16_t RelModel;
-    uint32_t LastPar;
+    char Name[MAX_ID_LEN];  // Unique name
+    uint16_t RelModel; /* Reliability model */
+    uint32_t LastPar; 
     uint16_t InitEnabl;
 } __attribute__((packed)) BEEventStruct;
 
