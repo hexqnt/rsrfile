@@ -7,11 +7,17 @@
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
+/*
+Summary information offset
+*/
 #define MCSSUMMARY_OFFSET 0
 #define UNCSUMMARY_OFFSET 1
 #define TDEPSUMMARY_OFFSET 2
 #define RESSUMMARYMISC_OFFSET 58
 
+/*
+Importance measurement offsets
+*/
 #define EVENTIMP_OFFSET 17
 #define PARAMIMP_OFFSSET 19
 #define EGIMP_OFFSET 23
@@ -20,40 +26,87 @@
 #define COMPIMP_OFFSET 35
 #define CCFGIMP_OFFSET 39
 
+/*
+Modularization objects offset
+*/
 #define MODMCSSTRUCT_OFFSET 4
 #define MODMCSEVENT_OFFSET 5
+#define MODEVENT_OFFSET 6
 
+/*
+Minimal cut set objects offset
+*/
 #define MCSSTRUCT_OFFSET 8
 #define MCSEVENT_OFFSET 9
 
 //#define MODMCSEVENT_OFFSET 57
 
+/*
+Basic objects offset
+*/
 #define EVENT_OFFSET 10
 #define BEVENT_OFFSET 11
 #define CCFEVENT_OFFSET 12
 #define PARAM_OFFSET 13
 
-#define MODEVENT_OFFSET 6
-
-#define CCFGROUP_OFFSET 37
-
+/*
+Attributes objects offset
+*/
 #define EVENTGROUP_OFFSET 21
 #define ATTR_OFFSET 25
 #define COMP_OFFSET 29
 #define SYS_OFFSET 33
+#define CCFGROUP_OFFSET 37
 
-#define UNC_PDF_OFFSET 42
+/*
+Uncertainty calculation results offset
+*/
 #define UNC_CDF_OFFSET 41
-
+#define UNC_PDF_OFFSET 42
+#define PDF_HISTOGRAM_OFFSET 43
 
 #define TIMEDEPSTRUCT_OFFSET 44
 #define AGROUPSTRUCT_OFFSET 45
 
-//#define 66
-
+/*
+The maximum length of the identifier. Applies to almost all objects.
+Since version 1.5+, the maximum length has become 50
+*/
 #define MAX_ID_LEN 20
 
-// TOC structure
+typedef enum
+{
+    BASIC_EVENT = 5,
+    CCF_EVENT = 12,
+    MOD_EVENT = 99
+} EventType;
+
+enum ImpType
+{
+    BASIC_EVENTS = 1,
+    PARAMS = 2,
+    COMPONENTS = 4,
+    SYSTEMS = 8,
+    ATTRIBUTES = 16,
+    CCFG = 16
+};
+
+typedef enum
+{
+    PROBABILITY = 1,
+    FAILURE_RATE = 2,
+    FREQUENCY = 3,
+    REPAIR_RATE = 99,
+    REPAIR_TIME = 99,
+    TEST_INTERVAL = 5,
+    TIME_TO_FIRST_TEST = 99,
+    MISSION_TIME = 7,
+    ALPHA = 8
+} ParamType;
+
+/*
+TOC structure
+*/
 typedef struct
 {
     uint32_t Record;
@@ -244,13 +297,6 @@ typedef struct
     uint32_t LastChild;
 } __attribute__((__packed__)) MODEventStruct;
 
-typedef enum
-{
-    BASIC_EVENT = 5,
-    CCF_EVENT = 12,
-    MOD_EVENT = 99
-} EventType;
-
 typedef struct
 {
     uint32_t Index;
@@ -263,20 +309,20 @@ typedef struct
 
 typedef enum
 {
-    CONTINUOSLY = 1, /* Continuously monitored, repairable */
-    PERIODICALLY = 2, /* Periodically tested */
-    CONST_PROBABILITY = 3, /* Constant probability */
+    CONTINUOSLY = 1,        /* Continuously monitored, repairable */
+    PERIODICALLY = 2,       /* Periodically tested */
+    CONST_PROBABILITY = 3,  /* Constant probability */
     CONST_MISSION_TIME = 4, /* Component with fixed mission time */
-    CONST_FREQUENCY = 5, /* Constant frequency */
-    UNREPAIRABLE =6 /* Unrepairable component  */
+    CONST_FREQUENCY = 5,    /* Constant frequency */
+    UNREPAIRABLE = 6        /* Unrepairable component  */
 } RALABILITY_MODEL;
 
 typedef struct
 {
     uint32_t Index;
-    char Name[MAX_ID_LEN];  // Unique name
-    uint16_t RelModel; /* Reliability model */
-    uint32_t LastPar; 
+    char Name[MAX_ID_LEN]; // Unique name
+    uint16_t RelModel;     /* Reliability model */
+    uint32_t LastPar;
     uint16_t InitEnabl;
 } __attribute__((packed)) BEEventStruct;
 
@@ -291,19 +337,6 @@ typedef struct
     uint32_t LastPar;
 } __attribute__((__packed__)) CCFEventStruct;
 
-typedef enum
-{
-    PROBABILITY = 1,
-    FAILURE_RATE = 2,
-    FREQUENCY = 3,
-    REPAIR_RATE = 99,
-    REPAIR_TIME = 99,
-    TEST_INTERVAL = 5,
-    TIME_TO_FIRST_TEST = 99,
-    MISSION_TIME = 7,
-    ALPHA = 8
-} ParamType;
-
 typedef struct
 {
     uint32_t Index;
@@ -313,15 +346,5 @@ typedef struct
     double Value;
     uint32_t FirstDistValue;
 } __attribute__((__packed__)) ParStruct;
-
-enum ImpType
-{
-    BASIC_EVENTS = 1,
-    PARAMS = 2,
-    COMPONENTS = 4,
-    SYSTEMS = 8,
-    ATTRIBUTES = 16,
-    CCFG = 16
-};
 
 #endif /* STRUCTURES */
