@@ -563,7 +563,7 @@ static PyObject *mod_mcs_get(RSRFile *self, void *closure)
         {
             PyObject *result = create_mcs(
                 (const MCSStruct *const)&self->mapped[self->headers[MODMCSSTRUCT_OFFSET].StartByte],
-                (const uint32_t *const)&self->mapped[self->headers[MCSEVENT_OFFSET].StartByte],
+                (const int32_t *const)&self->mapped[self->headers[MODMCSEVENT_OFFSET].StartByte],
                 (const EventStruct *const)&self->mapped[self->headers[EVENT_OFFSET].StartByte],
                 (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
                 (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],

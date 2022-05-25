@@ -2,7 +2,7 @@
 
 PyObject *create_mcs(
     const MCSStruct *const mcs_struct,
-    const uint32_t *const mcsevent_struct,
+    const int32_t *const mcsevent_struct,
     const EventStruct *const event_struct,
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
@@ -22,7 +22,7 @@ PyObject *create_mcs(
 
         for (uint_fast32_t column = 0; column < column_count; column++)
         {
-            const uint32_t e9 = mcsevent_struct[mcs.FirstEvent + column];
+            const int32_t e9 = mcsevent_struct[mcs.FirstEvent + column];
             EventStruct event = event_struct[e9];
             const uint32_t event_index = event.Index;
             const EventType event_type = event.EventType;

@@ -9,7 +9,7 @@
 
 PyObject *create_mcs(
     const MCSStruct *const mcs_struct,
-    const uint32_t *const  mcsevent_struct,
+    const int32_t *const  mcsevent_struct,
     const EventStruct *const event_struct,
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
