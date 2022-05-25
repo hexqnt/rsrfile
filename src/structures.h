@@ -42,6 +42,12 @@
 #define UNC_PDF_OFFSET 42
 #define UNC_CDF_OFFSET 41
 
+
+#define TIMEDEPSTRUCT_OFFSET 44
+#define AGROUPSTRUCT_OFFSET 45
+
+//#define 66
+
 #define MAX_ID_LEN 20
 
 // TOC structure
