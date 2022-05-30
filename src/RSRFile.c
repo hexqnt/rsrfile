@@ -241,7 +241,9 @@ static PyObject *misc_summary_get(RSRFile *self, void *closure)
     {
         if (self->headers[RESSUMMARYMISC_OFFSET].Record != 0)
         {
+
             ResSummaryMiscStruct *misc_struct = (ResSummaryMiscStruct *)&self->mapped[self->headers[RESSUMMARYMISC_OFFSET].StartByte];
+
             PyObject *const result = create_ResSummaryMisc(misc_struct);
             if (result == NULL)
             {

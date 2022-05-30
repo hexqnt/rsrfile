@@ -6,9 +6,9 @@
  
 typedef struct 
 {
-    uint32_t iDummy[9];
-    double fDummy[9];
-    double cDummy[9][20];
+    uint32_t iDummy[10];
+    double fDummy[10];
+    char cDummy[10][20];
 }__attribute__ ((__packed__)) ResSummaryMiscStruct;
 
 extern PyTypeObject ResSummaryMiscType;

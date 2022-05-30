@@ -33,6 +33,7 @@ PyMODINIT_FUNC PyInit_rsrfile(void)
     PyStructSequence_InitType(&MCSSummaryType, &MCSSummaryType_desc);
     PyStructSequence_InitType(&UNCSummaryType, &UNCSummaryType_desc);
     PyStructSequence_InitType(&TdepSummaryType, &TdepSummaryType_desc);
+    PyStructSequence_InitType(&ResSummaryMiscType, &ResSummaryMiscType_desc);
 
     PyStructSequence_InitType(&MCSEventType, &MCSEventType_desc);
 

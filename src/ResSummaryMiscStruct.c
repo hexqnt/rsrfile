@@ -1,4 +1,6 @@
 #include "ResSummaryMiscStruct.h"
+#include "common.h"
+#include "structures.h"
 
 PyTypeObject ResSummaryMiscType;
 
@@ -43,10 +45,11 @@ PyObject *create_ResSummaryMisc(ResSummaryMiscStruct *misc_struct)
     PyObject *cDummy_obj = PyTuple_New(10);
     for (int i = 0; i < 10; i++)
     {
+        const size_t str_len = trim(misc_struct->cDummy[i], MAX_ID_LEN);
         PyTuple_SET_ITEM(cDummy_obj, i,
-                         Py_BuildValue("s#", misc_struct->cDummy[i], 19));
+                         Py_BuildValue("s#", misc_struct->cDummy[i], str_len));
     }
-    PyStructSequence_SetItem(misc_obj, 1, cDummy_obj);
+    PyStructSequence_SetItem(misc_obj, 2, cDummy_obj);
 
     return misc_obj;
 }
