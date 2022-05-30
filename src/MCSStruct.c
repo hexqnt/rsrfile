@@ -40,8 +40,8 @@ PyObject *create_mcs(
                 name = modevent_struct[event_index].Name;
                 break;
             default:
-                name = "None type";
-                // return NULL;
+                PyErr_SetString(PyExc_Exception, "Error. Can't read event id. Undefine event type");
+                return NULL;
             }
 
             const size_t len = trim(name, MAX_ID_LEN);

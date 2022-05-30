@@ -40,8 +40,8 @@ typedef struct
     PyObject *filepath;
     PyObject *mode;
     uint8_t *mapped;
-    int fp;
     AnFileHeaderStruct *headers;
+    int fp;
     off_t file_size;
     
 } RSRFile;

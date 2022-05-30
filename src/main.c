@@ -26,6 +26,10 @@ static PyObject *m = NULL;
 PyMODINIT_FUNC PyInit_rsrfile(void)
 {
     m = PyModule_Create(&rsrfile);
+    if (m == NULL)
+    {
+        return NULL;
+    }
 
     PyDateTime_IMPORT;
 

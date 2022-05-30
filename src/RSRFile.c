@@ -71,6 +71,10 @@ static PyObject *RSRFile_open(RSRFile *self, PyObject *args)
 
 static PyObject *RSRFile_close(RSRFile *self)
 {
+    if (self->fp != NULL)
+    {
+        close(self->fp);
+    }
     if (self->mapped != NULL)
     {
         if (munmap(self->mapped, self->file_size) == -1)
@@ -101,8 +105,8 @@ static void RSRFile_dealloc(RSRFile *self)
     CHECK_NULL_DECREF(self->CompImpTable);
     CHECK_NULL_DECREF(self->SysImpTable);
     CHECK_NULL_DECREF(self->EGImpTable);
-    CHECK_NULL_DECREF(self->cdf);
     CHECK_NULL_DECREF(self->pdf);
+    CHECK_NULL_DECREF(self->cdf);
     CHECK_NULL_DECREF(self->mcs);
     CHECK_NULL_DECREF(self->mod_mcs);
     CHECK_NULL_DECREF(self->Events);
@@ -169,9 +173,6 @@ static PyObject *RSRFile_exit(RSRFile *self, PyObject *args)
 }
 
 static PyMemberDef RSRFile_members[] = {
-    //{"MCSSummary", T_OBJECT_EX, offsetof(RSRFile, MCSSummary), 0, "MCSSummary"},
-    //{"UNCSummary", T_OBJECT_EX, offsetof(RSRFile, UNCSummary), 0, "UNCSummary"},
-    //{"TimeDepSummary",T_OBJECT_EX, offsetof(RSRFile, TimeDepSummary), 0, "TimeDepSummary"},
     {"filepath", T_STRING, offsetof(RSRFile, filepath), 0, "Path to file"},
     {"mode", T_CHAR, offsetof(RSRFile, mode), 0, "Access mode to file"},
     {NULL} /* Sentinel */
@@ -614,6 +615,10 @@ static PyObject *events_get(RSRFile *self, void *closure)
                 const uint32_t event_index = event.Index;
                 const EventType event_type = event.EventType;
 
+                PyObject *value_obj = PyStructSequence_New(&MCSEventType);
+                PyStructSequence_SetItem(value_obj, 0, PyFloat_FromDouble(event.Mean));
+                PyStructSequence_SetItem(value_obj, 1, PyFloat_FromDouble(event.fW));
+
                 const char *name;
                 switch (event_type)
                 {
@@ -627,16 +632,11 @@ static PyObject *events_get(RSRFile *self, void *closure)
                     name = modevent_struct[event_index].Name;
                     break;
                 default:
-                    name = "None type";
-                    // return NULL;
+                    PyErr_SetString(PyExc_Exception, "Error. Can't read event id. Undefine event type");
+                    return NULL;
                 }
 
                 const size_t len = trim(name, MAX_ID_LEN);
-
-                PyObject *value_obj = PyStructSequence_New(&MCSEventType);
-                PyStructSequence_SetItem(value_obj, 0, PyFloat_FromDouble(event.Mean));
-                PyStructSequence_SetItem(value_obj, 1, PyFloat_FromDouble(event.fW));
-
                 PyDict_SetItem(dict_obj, Py_BuildValue("s#", name, len), value_obj);
             }
             self->Events = dict_obj;
@@ -718,7 +718,7 @@ static PyGetSetDef RSRFile_getsets[] = {
     {NULL}};
 
 static PyMethodDef RSRFile_methods[] = {
-    {"open", (PyCFunction)RSRFile_open, METH_VARARGS, "Open file"},
+    {"open", (PyCFunction)RSRFile_open, METH_VARARGS, "Open rsr file"},
     {"close", (PyCFunction)RSRFile_close, METH_NOARGS, "Close file"},
     {"__enter__", (PyCFunction)RSRFile_enter, METH_NOARGS, "Enter the runtime context"},
     {"__exit__", (PyCFunction)RSRFile_exit, METH_VARARGS, "Exit the runtime context"},

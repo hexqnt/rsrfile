@@ -47,7 +47,7 @@ PyObject *create_BEImportanceTable(
             PyTuple_SET_ITEM(row_obj, 1, Py_BuildValue("s", "MOD"));
             break;
         default: /* Error! */
-            PyErr_SetString(PyExc_ValueError, "Error. undefine event type");
+            PyErr_SetString(PyExc_Exception, "Error. Can't read event id. Undefine event type");
             return NULL;
         }
 
