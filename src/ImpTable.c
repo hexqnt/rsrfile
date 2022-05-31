@@ -51,7 +51,7 @@ PyObject *create_BEImportanceTable(
             return NULL;
         }
 
-        const size_t len = trim(name, MAX_ID_LEN);
+        const Py_ssize_t len = trim(name, MAX_ID_LEN);
 
         PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
         PyTuple_SET_ITEM(row_obj, 2, Py_BuildValue("d", imp_struct[i].Value));
@@ -90,7 +90,7 @@ PyObject *create_ParamImportanceTable(
         const uint32_t param_index = param_struct[imp_index].Index;
 
         const char *const name = param_struct[imp_index].Name;
-        const size_t len = trim(name, MAX_ID_LEN);
+        const Py_ssize_t len = trim(name, MAX_ID_LEN);
 
         PyObject *row_obj = PyTuple_New(ARRAY_SIZE(long_header_labels));
         PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
@@ -156,7 +156,7 @@ PyObject *ccfg_importance_table(
         const uint32_t imp_index = imp_struct[i].Index;
         const CCFGroupStruct ccfg = ccfg_struct[imp_index];
 
-        const size_t len = trim(ccfg.Name, MAX_ID_LEN);
+        const Py_ssize_t len = trim(ccfg.Name, MAX_ID_LEN);
 
         PyObject *row_obj = PyTuple_New(ARRAY_SIZE(short_header_labels));
 
@@ -194,7 +194,7 @@ PyObject *attr_importance_table(
         const ImpStruct imp = imp_struct[i];
         const AttributeStruct attr = attr_struct[imp.Index];
 
-        const size_t len = trim(attr.Name, MAX_ID_LEN);
+        const Py_ssize_t len = trim(attr.Name, MAX_ID_LEN);
         PyObject *row_obj = PyTuple_New(ARRAY_SIZE(short_header_labels));
 
         PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", attr.Name, len));

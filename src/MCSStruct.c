@@ -44,7 +44,7 @@ PyObject *create_mcs(
                 return NULL;
             }
 
-            const size_t len = trim(name, MAX_ID_LEN);
+            const Py_ssize_t len = trim(name, MAX_ID_LEN);
             PyTuple_SET_ITEM(row_obj, column + 1, Py_BuildValue("s#", name, len));
         }
 

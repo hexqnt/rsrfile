@@ -45,7 +45,7 @@ PyObject *create_ResSummaryMisc(ResSummaryMiscStruct *misc_struct)
     PyObject *cDummy_obj = PyTuple_New(10);
     for (int i = 0; i < 10; i++)
     {
-        const size_t str_len = trim(misc_struct->cDummy[i], MAX_ID_LEN);
+        const Py_ssize_t str_len = trim(misc_struct->cDummy[i], MAX_ID_LEN);
         PyTuple_SET_ITEM(cDummy_obj, i,
                          Py_BuildValue("s#", misc_struct->cDummy[i], str_len));
     }

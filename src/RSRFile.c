@@ -636,7 +636,7 @@ static PyObject *events_get(RSRFile *self, void *closure)
                     return NULL;
                 }
 
-                const size_t len = trim(name, MAX_ID_LEN);
+                const Py_ssize_t len = trim(name, MAX_ID_LEN);
                 PyDict_SetItem(dict_obj, Py_BuildValue("s#", name, len), value_obj);
             }
             self->Events = dict_obj;
@@ -727,7 +727,7 @@ static PyMethodDef RSRFile_methods[] = {
 
 PyTypeObject RSRFileType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "rsrfile.RSRFile",
+    .tp_name = "rsrfile.RSRFile",
     .tp_doc = PyDoc_STR("RSR File objects"),
     .tp_basicsize = sizeof(RSRFile),
     .tp_itemsize = 0,
