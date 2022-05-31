@@ -104,12 +104,28 @@ typedef enum
     ALPHA = 8
 } ParamType;
 
+typedef enum
+{
+    CONTINUOSLY = 1,        /* Continuously monitored, repairable */
+    PERIODICALLY = 2,       /* Periodically tested */
+    CONST_PROBABILITY = 3,  /* Constant probability */
+    CONST_MISSION_TIME = 4, /* Component with fixed mission time */
+    CONST_FREQUENCY = 5,    /* Constant frequency */
+    UNREPAIRABLE = 6        /* Unrepairable component  */
+} RALABILITY_MODEL;
+
+typedef enum
+{
+    NONE = 0,
+    LOGNORM = 1
+} DISTR_TYPE;
+
 /*
 TOC structure
 */
 typedef struct
 {
-    uint32_t Record;
+    int32_t Record;
     uint32_t StartByte;
     uint32_t Byte;
 } __attribute__((__packed__)) AnFileHeaderStruct;
@@ -306,16 +322,6 @@ typedef struct
     uint16_t InitEnable;
 
 } __attribute__((__packed__)) EventStruct;
-
-typedef enum
-{
-    CONTINUOSLY = 1,        /* Continuously monitored, repairable */
-    PERIODICALLY = 2,       /* Periodically tested */
-    CONST_PROBABILITY = 3,  /* Constant probability */
-    CONST_MISSION_TIME = 4, /* Component with fixed mission time */
-    CONST_FREQUENCY = 5,    /* Constant frequency */
-    UNREPAIRABLE = 6        /* Unrepairable component  */
-} RALABILITY_MODEL;
 
 typedef struct
 {

@@ -7,6 +7,21 @@
 #include "LargeNumStruct.h"
 #include "common.h"
 
+
+typedef enum
+{
+    Q_CALC =6,
+    F_CALC =9
+
+} CALC_TYPE;
+
+typedef enum
+{
+    SEQUENCE = 32,
+    EVENTS = 33
+
+} ACASE_TYPE;
+
 typedef struct  
 {
     char DateTime[20];
@@ -49,8 +64,20 @@ typedef struct
     uint32_t MCSDemod;
     uint32_t MCSModSaved;
     uint32_t MCSDemodSaved;
+    /*
+    fQ[0] - MCUB
+    fQ[1] - first order approximation  of Q
+    fQ[2] - second order approximation of Q
+    fQ[3] - third order approximation  of Q
+    */
     double fQ[4];
     double QBestApprox;
+    /*
+    fW[0] - MCUB
+    fW[1] - first order approximation  of W
+    fW[2] - second order approximation of W
+    fW[3] - third order approximation  of W
+    */
     double fW[4];
     double WBestApprox;
     double TruncErrorMod;
