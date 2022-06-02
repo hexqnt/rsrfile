@@ -150,7 +150,7 @@ static int RSRFile_init(RSRFile *self, PyObject *args, PyObject *kwds)
     uint16_t mResults = *(uint16_t *)self->mapped;
     if (mResults != 100)
     {
-        PyErr_SetString(PyExc_Exception, "File format error");
+        PyErr_SetString(PyExc_Exception, "Read error, invalid file format");
         return -1;
     }
     self->headers = (AnFileHeaderStruct *)&self->mapped[2];
@@ -182,7 +182,7 @@ static PyObject *mcs_summary_get(RSRFile *self, void *closure)
 {
     if (self->MCSSummary == NULL)
     {
-        if (self->headers[MCSSUMMARY_OFFSET].Record != 0)
+        if (self->headers[MCSSUMMARY_OFFSET].Record > 0)
         {
             MCSSummaryStruct *const mcs_struct = (MCSSummaryStruct *)&self->mapped[self->headers[MCSSUMMARY_OFFSET].StartByte];
             PyObject *const result = create_MCSSummary(mcs_struct);
@@ -191,6 +191,10 @@ static PyObject *mcs_summary_get(RSRFile *self, void *closure)
                 Py_RETURN_NONE;
             }
             self->MCSSummary = result;
+        }
+        else
+        {
+            Py_RETURN_NONE;
         }
     }
     Py_INCREF(self->MCSSummary);
@@ -201,7 +205,7 @@ static PyObject *unc_summary_get(RSRFile *self, void *closure)
 {
     if (self->UNCSummary == NULL)
     {
-        if (self->headers[UNCSUMMARY_OFFSET].Record != 0)
+        if (self->headers[UNCSUMMARY_OFFSET].Record > 0)
         {
             UNCSummaryStruct *const unc_struct = (UNCSummaryStruct *)&self->mapped[self->headers[UNCSUMMARY_OFFSET].StartByte];
             PyObject *const result = create_UNCSummary(unc_struct);
@@ -212,6 +216,10 @@ static PyObject *unc_summary_get(RSRFile *self, void *closure)
             }
             self->UNCSummary = result;
         }
+        else
+        {
+            Py_RETURN_NONE;
+        }
     }
     Py_INCREF(self->UNCSummary);
     return self->UNCSummary;
@@ -221,7 +229,7 @@ static PyObject *timedep_summary_get(RSRFile *self, void *closure)
 {
     if (self->TimeDepSummary == NULL)
     {
-        if (self->headers[TDEPSUMMARY_OFFSET].Record != 0)
+        if (self->headers[TDEPSUMMARY_OFFSET].Record > 0)
         {
             TdepSummaryStruct *tdp_struct = (TdepSummaryStruct *)&self->mapped[self->headers[TDEPSUMMARY_OFFSET].StartByte];
             PyObject *const result = create_TdepSummary(tdp_struct);
@@ -231,7 +239,11 @@ static PyObject *timedep_summary_get(RSRFile *self, void *closure)
             }
             self->TimeDepSummary = result;
         }
-    }
+        else
+        {
+            Py_RETURN_NONE;
+        }
+        }
     Py_INCREF(self->TimeDepSummary);
     return self->TimeDepSummary;
 }
@@ -240,7 +252,8 @@ static PyObject *misc_summary_get(RSRFile *self, void *closure)
 {
     if (self->ResSummaryMisc == NULL)
     {
-        if (self->headers[RESSUMMARYMISC_OFFSET].Record != 0)
+        if ((self->headers[RESSUMMARYMISC_OFFSET].Record > 0) &&
+            (self->headers[RESSUMMARYMISC_OFFSET].Bytes > 0))
         {
 
             ResSummaryMiscStruct *misc_struct = (ResSummaryMiscStruct *)&self->mapped[self->headers[RESSUMMARYMISC_OFFSET].StartByte];
@@ -251,6 +264,10 @@ static PyObject *misc_summary_get(RSRFile *self, void *closure)
                 Py_RETURN_NONE;
             }
             self->ResSummaryMisc = result;
+        }
+        else
+        {
+            Py_RETURN_NONE;
         }
     }
     Py_INCREF(self->ResSummaryMisc);
@@ -727,7 +744,7 @@ static PyMethodDef RSRFile_methods[] = {
 
 PyTypeObject RSRFileType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name = "rsrfile.RSRFile",
+        .tp_name = "rsrfile.RSRFile",
     .tp_doc = PyDoc_STR("RSR File objects"),
     .tp_basicsize = sizeof(RSRFile),
     .tp_itemsize = 0,

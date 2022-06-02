@@ -16,7 +16,7 @@ setup(
     description='Read RiskSpectrum PSA results bin-files',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    version='0.9.3',
+    version='0.9.4',
     author='Kravchenko Vladimir S',
     author_email='kvover@gmail.com',
     classifiers=[

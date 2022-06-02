@@ -5,9 +5,9 @@
 PyTypeObject ResSummaryMiscType;
 
 static PyStructSequence_Field ResSummaryMiscType_fields[] = {
-    {"iDummy", ""},
-    {"fDummy", ""},
-    {"cDummy", ""},
+    {"iDummy", "Integer misc data"},
+    {"fDummy", "Float misc data"},
+    {"cDummy", "String misc data"},
     {
         NULL,
     },

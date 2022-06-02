@@ -28,6 +28,10 @@ const size_t trim(const char *str, size_t len)
     while ((*(str + len) == ' ') || *(str + len) == (char)0)
     {
         len--;
+        if (len==0)
+        {
+            return 0;
+        }
     }
     return len + 1;
 }

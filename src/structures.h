@@ -12,7 +12,7 @@ Summary information offset
 */
 #define MCSSUMMARY_OFFSET 0
 #define UNCSUMMARY_OFFSET 1
-#define TDEPSUMMARY_OFFSET 2
+#define TDEPSUMMARY_OFFSET 2 //or 3
 #define RESSUMMARYMISC_OFFSET 58
 
 /*
@@ -38,8 +38,6 @@ Minimal cut set objects offset
 */
 #define MCSSTRUCT_OFFSET 8
 #define MCSEVENT_OFFSET 9
-
-//#define MODMCSEVENT_OFFSET 57
 
 /*
 Basic objects offset
@@ -67,6 +65,10 @@ Uncertainty calculation results offset
 
 #define TIMEDEPSTRUCT_OFFSET 44
 #define AGROUPSTRUCT_OFFSET 45
+
+#define EVENT_STATUS_OFFSET 55
+#define MCS_VALIDITY_OFFSET 57
+#define ANA_SETTINGS_OFFSET 66
 
 /*
 The maximum length of the identifier. Applies to almost all objects.
@@ -127,7 +129,7 @@ typedef struct
 {
     int32_t Record;
     uint32_t StartByte;
-    uint32_t Byte;
+    uint32_t Bytes;
 } __attribute__((__packed__)) AnFileHeaderStruct;
 
 typedef struct
