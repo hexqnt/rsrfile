@@ -1,6 +1,7 @@
 #ifndef MCSSTRUCT
 #define MCSSTRUCT
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include "structures.h"
 #include "common.h"
