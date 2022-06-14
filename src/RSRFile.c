@@ -4,11 +4,18 @@
 
 #include "RSRFile.h"
 
-static PyObject *RSRFile_open(RSRFile *self, PyObject *args)
+static const char *cp1251 = "cp1251";
+
+static PyObject *RSRFile_open(RSRFile *self, PyObject *args, PyObject *kwargs)
 {
     char *path_to_file;
     char *mode = NULL;
-    if (!PyArg_ParseTuple(args, "s|s", &path_to_file, &mode))
+    char *encoding = cp1251;
+
+    static char *kwlist[] = {"filepath", "mode", "encoding", NULL};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ss", kwlist,
+        &path_to_file, &mode, &encoding))
     {
         PyErr_SetString(PyExc_ValueError, "Error!");
         return NULL;
@@ -65,6 +72,8 @@ static PyObject *RSRFile_open(RSRFile *self, PyObject *args)
     }
     self->file_size = fileInfo.st_size;
     self->mapped = mapped;
+    self->encoding = encoding;
+    //self->encoding = cp1251;
 
     Py_RETURN_NONE;
 }
@@ -142,7 +151,7 @@ static PyObject *RSRFile_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 static int RSRFile_init(RSRFile *self, PyObject *args, PyObject *kwds)
 {
 
-    RSRFile_open(self, args);
+    RSRFile_open(self, args, kwds);
     if (PyErr_Occurred())
     {
         return -1;
@@ -175,6 +184,7 @@ static PyObject *RSRFile_exit(RSRFile *self, PyObject *args)
 static PyMemberDef RSRFile_members[] = {
     {"filepath", T_STRING, offsetof(RSRFile, filepath), 0, "Path to file"},
     {"mode", T_CHAR, offsetof(RSRFile, mode), 0, "Access mode to file"},
+    {"encoding", T_STRING, offsetof(RSRFile, encoding), 0, "Encoding of string data in file"},
     {NULL} /* Sentinel */
 };
 
@@ -287,7 +297,8 @@ static PyObject *be_im_get(RSRFile *self, void *closure)
                 (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
                 (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
                 (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding);
 
             if (result == NULL)
             {
@@ -315,7 +326,8 @@ static PyObject *param_im_get(RSRFile *self, void *closure)
             PyObject *result = create_ParamImportanceTable(
                 (const ImpStruct *const)&self->mapped[self->headers[PARAMIMP_OFFSSET].StartByte],
                 (const ParStruct *const)&self->mapped[self->headers[PARAM_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding);
 
             if (result == NULL)
             {
@@ -415,7 +427,8 @@ static PyObject *ccfg_im_get(RSRFile *self, void *closure)
             PyObject *result = ccfg_importance_table(
                 (const ImpStruct *const)&self->mapped[self->headers[CCFGIMP_OFFSET].StartByte],
                 (const CCFGroupStruct *const)&self->mapped[self->headers[CCFGROUP_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding);
 
             if (result == NULL)
             {
@@ -443,7 +456,8 @@ static PyObject *attr_im_get(RSRFile *self, void *closure)
             PyObject *result = attr_importance_table(
                 (const ImpStruct *const)&self->mapped[self->headers[ATTRIMP_OFFSET].StartByte],
                 (const AttributeStruct *const)&self->mapped[self->headers[ATTR_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding);
 
             if (result == NULL)
             {
@@ -471,7 +485,8 @@ static PyObject *comp_im_get(RSRFile *self, void *closure)
             PyObject *result = attr_importance_table(
                 (const ImpStruct *const)&self->mapped[self->headers[COMPIMP_OFFSET].StartByte],
                 (const AttributeStruct *const)&self->mapped[self->headers[COMP_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding);
 
             if (result == NULL)
             {
@@ -498,7 +513,8 @@ static PyObject *sys_im_get(RSRFile *self, void *closure)
             PyObject *result = attr_importance_table(
                 (const ImpStruct *const)&self->mapped[self->headers[SYSIMP_OFFSET].StartByte],
                 (const AttributeStruct *const)&self->mapped[self->headers[SYS_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding);
 
             if (result == NULL)
             {
@@ -525,7 +541,8 @@ static PyObject *eg_im_get(RSRFile *self, void *closure)
             PyObject *result = attr_importance_table(
                 (const ImpStruct *const)&self->mapped[self->headers[EGIMP_OFFSET].StartByte],
                 (const AttributeStruct *const)&self->mapped[self->headers[EVENTGROUP_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding);
 
             if (result == NULL)
             {
@@ -557,7 +574,8 @@ static PyObject *mcs_get(RSRFile *self, void *closure)
                 (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
                 (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
                 (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding);
 
             if (result == NULL)
             {
@@ -588,7 +606,8 @@ static PyObject *mod_mcs_get(RSRFile *self, void *closure)
                 (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
                 (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
                 (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
-                count);
+                count,
+                self->encoding );
 
             if (result == NULL)
             {
@@ -735,7 +754,7 @@ static PyGetSetDef RSRFile_getsets[] = {
     {NULL}};
 
 static PyMethodDef RSRFile_methods[] = {
-    {"open", (PyCFunction)RSRFile_open, METH_VARARGS, "Open rsr file"},
+    {"open", (PyCFunction)RSRFile_open, METH_VARARGS | METH_KEYWORDS, "Open rsr file"},
     {"close", (PyCFunction)RSRFile_close, METH_NOARGS, "Close file"},
     {"__enter__", (PyCFunction)RSRFile_enter, METH_NOARGS, "Enter the runtime context"},
     {"__exit__", (PyCFunction)RSRFile_exit, METH_VARARGS, "Exit the runtime context"},

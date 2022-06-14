@@ -7,7 +7,8 @@ PyObject *create_mcs(
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct,
-    const uint_fast32_t count)
+    const uint_fast32_t count,
+    const char *encoding)
 {
     PyObject *col_obj = PyTuple_New(count);
     uint_fast8_t max_mcs_len = 1;
@@ -45,7 +46,9 @@ PyObject *create_mcs(
             }
 
             const Py_ssize_t len = trim(name, MAX_ID_LEN);
-            PyTuple_SET_ITEM(row_obj, column + 1, Py_BuildValue("s#", name, len));
+            PyObject *name_obj = PyUnicode_Decode(name, len, encoding, NULL);
+            PyTuple_SET_ITEM(row_obj, column + 1, name_obj);
+            //PyTuple_SET_ITEM(row_obj, column + 1, Py_BuildValue("s#", name, len));
         }
 
         PyTuple_SET_ITEM(col_obj, row, row_obj);

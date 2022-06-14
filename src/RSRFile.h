@@ -43,6 +43,7 @@ typedef struct
     AnFileHeaderStruct *headers;
     int fp;
     off_t file_size;
+    char *encoding;
     
 } RSRFile;
 

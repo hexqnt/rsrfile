@@ -8,7 +8,7 @@ from tabulate import tabulate
 def read_zip(file_path: str, temp_dir_name='temp') -> str:
     """ Extract a single rsr file from zip archive to temp dir """
     with ZipFile(file_path, 'r') as zipObject:
-        listOfFileNames = zipObject.namelist()[1:]
+        listOfFileNames = zipObject.namelist()
         for fileName in listOfFileNames:
             if fileName.endswith('.RSR'):
                 zipObject.extract(fileName, temp_dir_name)
@@ -22,6 +22,15 @@ def read_rsr_time(file_path: str) -> tuple[str, float]:
         f = rsrfile.open(path)
         acase_id = f.misc_summary.cDummy[1]
         yield (acase_id, f.mcs_summary.RunTimeTot)
+        f.close()
+        del(f)
+
+
+def read_rsr_mcs(file_path: str):
+    for path in read_zip(file_path):
+        f = rsrfile.open(path)
+        mcs = f.mcs[5]
+        print(mcs)
         f.close()
         del(f)
 

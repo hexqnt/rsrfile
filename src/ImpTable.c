@@ -12,7 +12,8 @@ PyObject *create_BEImportanceTable(
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct,
-    const uint_fast32_t count)
+    const uint_fast32_t count,
+    const char *encoding)
 {
 
     PyObject *col_obj = PyTuple_New(count + 1);
@@ -53,7 +54,10 @@ PyObject *create_BEImportanceTable(
 
         const Py_ssize_t len = trim(name, MAX_ID_LEN);
 
-        PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
+
+        PyObject *name_obj = PyUnicode_Decode(name, len, encoding, NULL);
+        PyTuple_SET_ITEM(row_obj, 0, name_obj);
+        //PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
         PyTuple_SET_ITEM(row_obj, 2, Py_BuildValue("d", imp_struct[i].Value));
         PyTuple_SET_ITEM(row_obj, 3, Py_BuildValue("d", imp_struct[i].FV));
         PyTuple_SET_ITEM(row_obj, 4, Py_BuildValue("d", imp_struct[i].FC));
@@ -72,7 +76,8 @@ PyObject *create_BEImportanceTable(
 PyObject *create_ParamImportanceTable(
     const ImpStruct *const imp_struct,
     const ParStruct *const param_struct,
-    const uint_fast32_t count)
+    const uint_fast32_t count,
+    const char *encoding)
 {
     PyObject *col_obj = PyTuple_New(count + 1);
 
@@ -93,7 +98,10 @@ PyObject *create_ParamImportanceTable(
         const Py_ssize_t len = trim(name, MAX_ID_LEN);
 
         PyObject *row_obj = PyTuple_New(ARRAY_SIZE(long_header_labels));
-        PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
+
+        PyObject *name_obj = PyUnicode_Decode(name, len, encoding, NULL);
+        PyTuple_SET_ITEM(row_obj, 0, name_obj);
+        //PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
 
         const ParamType param_type = param_struct[imp_index].PARType;
 
@@ -139,7 +147,8 @@ PyObject *create_ParamImportanceTable(
 PyObject *ccfg_importance_table(
     const ImpStruct *const imp_struct,
     const CCFGroupStruct *const ccfg_struct,
-    const uint_fast32_t count)
+    const uint_fast32_t count,
+    const char *encoding)
 {
 
     PyObject *col_obj = PyTuple_New(count + 1);
@@ -160,7 +169,9 @@ PyObject *ccfg_importance_table(
 
         PyObject *row_obj = PyTuple_New(ARRAY_SIZE(short_header_labels));
 
-        PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", ccfg.Name, len));
+        PyObject *name_obj = PyUnicode_Decode(ccfg.Name, len, encoding, NULL);
+        PyTuple_SET_ITEM(row_obj, 0, name_obj);
+        //PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", ccfg.Name, len));
         PyTuple_SET_ITEM(row_obj, 1, Py_BuildValue("d", imp_struct[i].FC));
         PyTuple_SET_ITEM(row_obj, 2, Py_BuildValue("d", imp_struct[i].RDF));
         PyTuple_SET_ITEM(row_obj, 3, Py_BuildValue("d", imp_struct[i].RIF));
@@ -177,7 +188,8 @@ PyObject *ccfg_importance_table(
 PyObject *attr_importance_table(
     const ImpStruct *const imp_struct,
     const AttributeStruct *const attr_struct,
-    const uint_fast32_t count)
+    const uint_fast32_t count,
+    const char *encoding)
 {
 
     PyObject *col_obj = PyTuple_New(count + 1);
@@ -197,7 +209,9 @@ PyObject *attr_importance_table(
         const Py_ssize_t len = trim(attr.Name, MAX_ID_LEN);
         PyObject *row_obj = PyTuple_New(ARRAY_SIZE(short_header_labels));
 
-        PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", attr.Name, len));
+        PyObject *name_obj = PyUnicode_Decode(attr.Name, len, encoding, NULL);
+        PyTuple_SET_ITEM(row_obj, 0, name_obj);
+        //PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", attr.Name, len));
         PyTuple_SET_ITEM(row_obj, 1, Py_BuildValue("d", imp.FC));
         PyTuple_SET_ITEM(row_obj, 2, Py_BuildValue("d", imp.RDF));
         PyTuple_SET_ITEM(row_obj, 3, Py_BuildValue("d", imp.RIF));

@@ -5,7 +5,7 @@ from datetime import datetime
 
 @pytest.yield_fixture
 def opened_file():
-    fileobj = rsrfile.open(r'./tests/data/cons_acase.RSR', 'r')
+    fileobj = rsrfile.open(r'./tests/data/cons_acase.RSR')
     try:
         yield fileobj
     finally:

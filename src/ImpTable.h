@@ -13,21 +13,25 @@ PyObject *create_BEImportanceTable(
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct,
-    const uint_fast32_t count);
+    const uint_fast32_t count,
+    const char *encoding);
 
 PyObject *create_ParamImportanceTable(
     const ImpStruct *const imp_struct,
     const ParStruct *const param_struct,
-    const uint_fast32_t count);
+    const uint_fast32_t count,
+    const char *encoding);
 
 PyObject* ccfg_importance_table(
     const ImpStruct *const imp_struct,
     const CCFGroupStruct *const ccfg_struct,
-    const uint_fast32_t count);
+    const uint_fast32_t count,
+    const char *encoding);
 
 PyObject* attr_importance_table(
     const ImpStruct *const imp_struct,
     const AttributeStruct *const attr_struct,
-    const uint_fast32_t count);
+    const uint_fast32_t count,
+    const char *encoding);
 
 #endif /* IMPTABLE */

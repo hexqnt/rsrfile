@@ -11,7 +11,7 @@ builtin_open(PyObject *self, PyObject *args, PyObject *kwds)
 }
 
 static PyMethodDef addList_funcs[] = {
-    {"open", (PyCFunction)builtin_open, METH_VARARGS, "open file"},
+    {"open", (PyCFunction)builtin_open, METH_VARARGS| METH_KEYWORDS, "Open rsr file"},
     {NULL, NULL, 0, NULL}};
 
 static struct PyModuleDef rsrfile = {
