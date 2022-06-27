@@ -668,7 +668,7 @@ static PyObject *events_get(RSRFile *self, void *closure)
                     name = modevent_struct[event_index].Name;
                     break;
                 default:
-                    PyErr_SetString(PyExc_Exception, "Error. Can't read event id. Undefine event type");
+                    PyErr_Format(PyExc_RuntimeError, "Can't read event, undefine event type '%u' in (%u)", event_type, i);
                     return NULL;
                 }
 
