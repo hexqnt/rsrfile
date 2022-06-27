@@ -23,8 +23,10 @@ PyObject *create_mcs(
 
         for (uint_fast32_t column = 0; column < column_count; column++)
         {
+            // Address to event struct. If negative then not event
             const int32_t e9 = mcsevent_struct[mcs.FirstEvent + column];
-            EventStruct event = event_struct[e9];
+            EventStruct event = event_struct[abs(e9)];
+
             const uint32_t event_index = event.Index;
             const EventType event_type = event.EventType;
 
@@ -41,12 +43,29 @@ PyObject *create_mcs(
                 name = modevent_struct[event_index].Name;
                 break;
             default:
-                PyErr_SetString(PyExc_Exception, "Error. Can't read event id. Undefine event type");
+                char err_row[80];
+                snprintf(err_row, sizeof(err_row),
+                    "Can't read event, undefine event type '%hd' in (%d, %d)",
+                    event_type, row, column+1);
+                PyErr_SetString(PyExc_Exception, err_row);
                 return NULL;
             }
 
             const Py_ssize_t len = trim(name, MAX_ID_LEN);
-            PyObject *name_obj = PyUnicode_Decode(name, len, encoding, NULL);
+            PyObject *name_obj;
+
+            // Test on non negative event
+            if  (abs(e9)+e9>0)
+            {
+                name_obj = PyUnicode_Decode(name, len, encoding, NULL);
+            }
+            else
+            {
+                char neg_name[MAX_ID_LEN+1];
+                neg_name[0]='-';
+                strncpy(&neg_name[1], name, len); 
+                name_obj = PyUnicode_Decode(neg_name, len+1, encoding, NULL);
+            }
             PyTuple_SET_ITEM(row_obj, column + 1, name_obj);
             //PyTuple_SET_ITEM(row_obj, column + 1, Py_BuildValue("s#", name, len));
         }
@@ -58,7 +77,7 @@ PyObject *create_mcs(
     for (uint_fast8_t i = 1; i < max_mcs_len + 1; i++)
     {
         char s[10];
-        sprintf(s, "Event %u", i);
+        snprintf(s, sizeof(s), "Event %u", i);
         PyTuple_SET_ITEM(header_obj, i, Py_BuildValue("s", s));
     }
     PyTuple_SET_ITEM(col_obj, 0, header_obj);

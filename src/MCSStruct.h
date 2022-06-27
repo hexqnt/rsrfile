@@ -3,9 +3,9 @@
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <stdlib.h>
 #include "structures.h"
 #include "common.h"
-
 
 
 PyObject *create_mcs(
