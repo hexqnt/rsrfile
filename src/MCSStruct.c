@@ -7,14 +7,15 @@ PyObject *create_mcs(
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct,
-    const uint_fast32_t count,
     const char *encoding,
-    const int with_header)
+    const uint_fast32_t start,
+    const uint_fast32_t end,
+    const int with_header,
+    const int mod_expand)
 {
-    PyObject *col_obj = PyTuple_New(count);
+    PyObject *col_obj = PyTuple_New(end-start+with_header);
     uint_fast8_t max_mcs_len = 1;
-
-    for (uint_fast32_t row = 0 + with_header; row < count+with_header; row++)
+    for (uint_fast32_t row = start; row < end; row++)
     {
         MCSStruct mcs = mcs_struct[row];
         const uint_fast32_t column_count = mcs.LastEvent - mcs.FirstEvent + 1;
@@ -45,11 +46,7 @@ PyObject *create_mcs(
                 name = modevent_struct[event_index].Name;
                 break;
             default:
-                char err_row[80];
-                snprintf(err_row, sizeof(err_row),
-                    "Can't read event, undefine event type '%hd' in (%d, %d)",
-                    event_type, row, column+1);
-                PyErr_SetString(PyExc_Exception, err_row);
+                PyErr_Format(PyExc_RuntimeError, "Can't read event, undefine event type '%u' in (%u, %u)", event_type, row, column+1);
                 return NULL;
             }
 
@@ -72,9 +69,10 @@ PyObject *create_mcs(
             //PyTuple_SET_ITEM(row_obj, column + 1, Py_BuildValue("s#", name, len));
         }
 
-        PyTuple_SET_ITEM(col_obj, row, row_obj);
+        PyTuple_SET_ITEM(col_obj, row+with_header-start, row_obj);
     }
-    if (with_header){
+    if (with_header)
+    {
         PyObject *header_obj = PyTuple_New(max_mcs_len + 1);
         PyTuple_SET_ITEM(header_obj, 0, Py_BuildValue("s", "Mean"));
         for (uint_fast8_t i = 1; i < max_mcs_len + 1; i++)

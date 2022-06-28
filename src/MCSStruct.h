@@ -3,7 +3,7 @@
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 #include "structures.h"
 #include "common.h"
 
@@ -15,8 +15,10 @@ PyObject *create_mcs(
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct,
-    const uint_fast32_t count,
     const char *encoding,
-    const int with_header);
+    const uint_fast32_t start,
+    const uint_fast32_t end,
+    const int with_header,
+    const int mod_expand);
 
 #endif /* MCSSTRUCT */

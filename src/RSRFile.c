@@ -561,20 +561,33 @@ static PyObject *eg_im_get(RSRFile *self, void *closure)
 
 static PyObject *mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
 {
-    char *kwlist[] = {"with_header", "with_index", "mod_expand", NULL};
+    char *kwlist[] = {"start", "end", "with_header", "mod_expand", NULL};
     
+    uint_fast32_t start = 1;
+    uint_fast32_t end = 0;
     int with_header = 1;
     int mod_expand = 0;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|pp", kwlist,
-        &with_header, &mod_expand))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|IIpp", kwlist,
+        &start, &end, &with_header, &mod_expand))
     {
         PyErr_SetString(PyExc_ValueError, "Incorrect parameters");
         return NULL;
     }
+
     const uint_fast32_t count = self->headers[MCSSTRUCT_OFFSET].Record;
+    
     if (count > 0)
     {
+        if ((end == 0) || (end>count))
+        {
+            end = count;
+        }
+        if (start>end)
+        {
+            PyErr_SetString(PyExc_ValueError, "End value must be more than start value");
+            return NULL;
+        }
 
         PyObject *result = create_mcs(
             (const MCSStruct *const)&self->mapped[self->headers[MCSSTRUCT_OFFSET].StartByte],
@@ -583,9 +596,7 @@ static PyObject *mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
             (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
             (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
             (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
-            count,
-            self->encoding,
-            with_header);
+            self->encoding, start, end, with_header, mod_expand);
 
         if (result == NULL)
         {
@@ -599,20 +610,32 @@ static PyObject *mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
 
 static PyObject *mod_mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
 {
-    char *kwlist[] = {"with_header", NULL};
+    char *kwlist[] = {"start", "end", "with_header", NULL};
     
+    uint_fast32_t start = 1;
+    uint_fast32_t end = 0;
     int with_header = 1;
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwlist,
-        &with_header))
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|IIp", kwlist,
+        &start, &end, &with_header))
     {
         PyErr_SetString(PyExc_ValueError, "Incorrect parameters");
         return NULL;
     }
+
     const uint_fast32_t count = self->headers[MODMCSSTRUCT_OFFSET].Record;
     
     if (count > 0)
     {
+        if ((end == 0) || (end>count))
+        {
+            end = count;
+        }
+        if (start>end)
+        {
+            PyErr_SetString(PyExc_ValueError, "End value must be more than start value");
+            return NULL;
+        }
         PyObject *result = create_mcs(
             (const MCSStruct *const)&self->mapped[self->headers[MODMCSSTRUCT_OFFSET].StartByte],
             (const int32_t *const)&self->mapped[self->headers[MODMCSEVENT_OFFSET].StartByte],
@@ -620,9 +643,7 @@ static PyObject *mod_mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
             (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
             (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
             (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
-            count,
-            self->encoding,
-            with_header);
+            self->encoding,start, end, with_header, NULL);
 
         if (result == NULL)
         {
