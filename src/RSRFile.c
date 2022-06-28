@@ -559,69 +559,80 @@ static PyObject *eg_im_get(RSRFile *self, void *closure)
     return self->EGImpTable;
 }
 
-static PyObject *mcs_get(RSRFile *self, void *closure)
+static PyObject *mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
 {
-    if (self->mcs == NULL)
+    char *kwlist[] = {"with_header", "with_index", "mod_expand", NULL};
+    
+    int with_header = 1;
+    int mod_expand = 0;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|pp", kwlist,
+        &with_header, &mod_expand))
     {
-        const uint_fast32_t count = self->headers[MCSSTRUCT_OFFSET].Record;
-        if (count > 0)
-        {
+        PyErr_SetString(PyExc_ValueError, "Incorrect parameters");
+        return NULL;
+    }
+    const uint_fast32_t count = self->headers[MCSSTRUCT_OFFSET].Record;
+    if (count > 0)
+    {
 
-            PyObject *result = create_mcs(
-                (const MCSStruct *const)&self->mapped[self->headers[MCSSTRUCT_OFFSET].StartByte],
-                (const uint32_t *const)&self->mapped[self->headers[MCSEVENT_OFFSET].StartByte],
-                (const EventStruct *const)&self->mapped[self->headers[EVENT_OFFSET].StartByte],
-                (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
-                (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
-                (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
-                count,
-                self->encoding);
+        PyObject *result = create_mcs(
+            (const MCSStruct *const)&self->mapped[self->headers[MCSSTRUCT_OFFSET].StartByte],
+            (const uint32_t *const)&self->mapped[self->headers[MCSEVENT_OFFSET].StartByte],
+            (const EventStruct *const)&self->mapped[self->headers[EVENT_OFFSET].StartByte],
+            (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
+            (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
+            (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
+            count,
+            self->encoding,
+            with_header);
 
-            if (result == NULL)
-            {
-                Py_RETURN_NONE;
-            }
-            self->mcs = result;
-        }
-        else
+        if (result == NULL)
         {
             Py_RETURN_NONE;
         }
+        Py_INCREF(result);
+        return result;
     }
-    Py_INCREF(self->mcs);
-    return self->mcs;
+    Py_RETURN_NONE;
 }
 
-static PyObject *mod_mcs_get(RSRFile *self, void *closure)
+static PyObject *mod_mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
 {
-    if (self->mod_mcs == NULL)
-    {
-        const uint_fast32_t count = self->headers[MODMCSSTRUCT_OFFSET].Record;
-        if (count > 0)
-        {
-            PyObject *result = create_mcs(
-                (const MCSStruct *const)&self->mapped[self->headers[MODMCSSTRUCT_OFFSET].StartByte],
-                (const int32_t *const)&self->mapped[self->headers[MODMCSEVENT_OFFSET].StartByte],
-                (const EventStruct *const)&self->mapped[self->headers[EVENT_OFFSET].StartByte],
-                (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
-                (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
-                (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
-                count,
-                self->encoding );
+    char *kwlist[] = {"with_header", NULL};
+    
+    int with_header = 1;
 
-            if (result == NULL)
-            {
-                Py_RETURN_NONE;
-            }
-            self->mod_mcs = result;
-        }
-        else
+    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|p", kwlist,
+        &with_header))
+    {
+        PyErr_SetString(PyExc_ValueError, "Incorrect parameters");
+        return NULL;
+    }
+    const uint_fast32_t count = self->headers[MODMCSSTRUCT_OFFSET].Record;
+    
+    if (count > 0)
+    {
+        PyObject *result = create_mcs(
+            (const MCSStruct *const)&self->mapped[self->headers[MODMCSSTRUCT_OFFSET].StartByte],
+            (const int32_t *const)&self->mapped[self->headers[MODMCSEVENT_OFFSET].StartByte],
+            (const EventStruct *const)&self->mapped[self->headers[EVENT_OFFSET].StartByte],
+            (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
+            (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
+            (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
+            count,
+            self->encoding,
+            with_header);
+
+        if (result == NULL)
         {
             Py_RETURN_NONE;
         }
+        Py_INCREF(result);
+        return result;
     }
-    Py_INCREF(self->mod_mcs);
-    return self->mod_mcs;
+        Py_RETURN_NONE;
+    
 }
 
 static PyObject *events_get(RSRFile *self, void *closure)
@@ -739,13 +750,13 @@ static PyGetSetDef RSRFile_getsets[] = {
      "Cumulative distribution function of results", /* doc */
      NULL /* closure */},
 
-    {"mcs", (getter)mcs_get, NULL,
-     "Minimal cut sets", /* doc */
-     NULL /* closure */},
+    //{"mcs", (getter)mcs_get, NULL,
+    // "Minimal cut sets", /* doc */
+    // NULL /* closure */},
 
-    {"mod_mcs", (getter)mod_mcs_get, NULL,
-     "Mod. minimal cut sets", /* doc */
-     NULL /* closure */},
+    // {"mod_mcs", (getter)mod_mcs_get, NULL,
+    //  "Mod. minimal cut sets", /* doc */
+    //  NULL /* closure */},
 
     {"events", (getter)events_get, NULL,
      "Dictionary of events used in the minimum sections", /* doc */
@@ -758,6 +769,8 @@ static PyMethodDef RSRFile_methods[] = {
     {"close", (PyCFunction)RSRFile_close, METH_NOARGS, "Close file"},
     {"__enter__", (PyCFunction)RSRFile_enter, METH_NOARGS, "Enter the runtime context"},
     {"__exit__", (PyCFunction)RSRFile_exit, METH_VARARGS, "Exit the runtime context"},
+    {"mcs", (PyCFunction)mcs_get, METH_VARARGS | METH_KEYWORDS, "Get minimal cut sets"},
+    {"mod_mcs", (PyCFunction)mod_mcs_get, METH_VARARGS | METH_KEYWORDS, "Get mod. minimal cut sets"},
     {NULL} /* Sentinel */
 };
 

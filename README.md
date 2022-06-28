@@ -28,3 +28,21 @@ with rsrfile.open('<path to RSR file>', '<open mode> "r" or "w"') as f:
         columns=f.AttrImpTable[0])
     print(attr)
 ```
+
+## Documentation
+### Summary results
+
+``` python
+rsrfile.RSRFile.mcs_summary
+```
+### MCS
+### Mod. MCS
+### Risk Importance Measures
+* Basic Event
+* CCF Group
+* Parameter
+* Attribute
+* Component
+* System
+* Event Group
+### Other stats

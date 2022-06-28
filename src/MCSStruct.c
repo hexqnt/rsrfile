@@ -8,11 +8,13 @@ PyObject *create_mcs(
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct,
     const uint_fast32_t count,
-    const char *encoding)
+    const char *encoding,
+    const int with_header)
 {
     PyObject *col_obj = PyTuple_New(count);
     uint_fast8_t max_mcs_len = 1;
-    for (uint_fast32_t row = 1; row < count; row++)
+
+    for (uint_fast32_t row = 0 + with_header; row < count+with_header; row++)
     {
         MCSStruct mcs = mcs_struct[row];
         const uint_fast32_t column_count = mcs.LastEvent - mcs.FirstEvent + 1;
@@ -72,15 +74,17 @@ PyObject *create_mcs(
 
         PyTuple_SET_ITEM(col_obj, row, row_obj);
     }
-    PyObject *header_obj = PyTuple_New(max_mcs_len + 1);
-    PyTuple_SET_ITEM(header_obj, 0, Py_BuildValue("s", "Mean"));
-    for (uint_fast8_t i = 1; i < max_mcs_len + 1; i++)
-    {
-        char s[10];
-        snprintf(s, sizeof(s), "Event %u", i);
-        PyTuple_SET_ITEM(header_obj, i, Py_BuildValue("s", s));
+    if (with_header){
+        PyObject *header_obj = PyTuple_New(max_mcs_len + 1);
+        PyTuple_SET_ITEM(header_obj, 0, Py_BuildValue("s", "Mean"));
+        for (uint_fast8_t i = 1; i < max_mcs_len + 1; i++)
+        {
+            char s[10];
+            snprintf(s, sizeof(s), "Event %u", i);
+            PyTuple_SET_ITEM(header_obj, i, Py_BuildValue("s", s));
+        }
+        PyTuple_SET_ITEM(col_obj, 0, header_obj);
     }
-    PyTuple_SET_ITEM(col_obj, 0, header_obj);
 
     return col_obj;
 }

@@ -16,6 +16,7 @@ PyObject *create_mcs(
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct,
     const uint_fast32_t count,
-    const char *encoding);
+    const char *encoding,
+    const int with_header);
 
 #endif /* MCSSTRUCT */
