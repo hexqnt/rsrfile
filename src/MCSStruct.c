@@ -36,6 +36,7 @@ static const STRPTR FindEventId(
 }
 
 static PyObject *expand_module(
+    PyObject *set,
     const EventStruct const module,
     const EventStruct *const event_struct,
     const MODEventStruct *const modevent_struct,
@@ -54,7 +55,15 @@ static PyObject *expand_module(
         EventStruct event = event_struct[abs(num2)];
         if (event.EventType == MOD_EVENT)
         {
-            expand_module
+            expand_module(
+                    set,
+                    event,
+                    event_struct,
+                    modevent_struct,
+                    modulevents,
+                    beevent_struct,
+                    ccfevent_struct,
+                    encoding);
         }
         else
         {
@@ -82,10 +91,10 @@ static PyObject *expand_module(
                 strncpy(&neg_name[1], name.ptr, name.len);
                 name_obj = PyUnicode_Decode(neg_name, name.len + 1, encoding, NULL);
             }
-            PyTuple_SET_ITEM(row_obj, i - num, name_obj);
+            Set_Add(set, name_obj);
         }
     }
-    return row_obj;
+    return set;
 }
 
 PyObject *create_mcs(
@@ -135,6 +144,7 @@ PyObject *create_mcs(
             if ((mod_expand == 1) && (event.EventType == MOD_EVENT))
             {
                 name_obj = expand_module(
+                    PySet_New(NULL),
                     event,
                     event_struct,
                     modevent_struct,
