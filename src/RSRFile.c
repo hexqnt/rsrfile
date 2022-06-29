@@ -596,6 +596,7 @@ static PyObject *mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
             (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
             (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
             (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
+            (const uint32_t *const)&self->mapped[self->headers[7].StartByte],
             self->encoding, start, end, with_header, mod_expand);
 
         if (result == NULL)
@@ -643,7 +644,8 @@ static PyObject *mod_mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
             (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte],
             (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
             (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
-            self->encoding,start, end, with_header, NULL);
+            (const uint32_t *const)&self->mapped[self->headers[7].StartByte],
+            self->encoding,start, end, with_header, 0);
 
         if (result == NULL)
         {

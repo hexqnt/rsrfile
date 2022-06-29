@@ -1,5 +1,93 @@
 #include "MCSStruct.h"
 
+typedef struct
+{
+    char *ptr;
+    size_t len;
+} STRPTR;
+
+static const STRPTR FindEventId(
+    const EventStruct const event,
+    const BEEventStruct *const beevent_struct,
+    const CCFEventStruct *const ccfevent_struct,
+    const MODEventStruct *const modevent_struct)
+{
+
+    STRPTR str;
+
+    switch (event.EventType)
+    {
+    case BASIC_EVENT:
+        str.ptr = beevent_struct[event.Index].Name;
+        break;
+    case CCF_EVENT:
+        str.ptr = ccfevent_struct[event.Index].Name;
+        break;
+    case MOD_EVENT:
+        str.ptr = modevent_struct[event.Index].Name;
+        break;
+    default:
+        str.ptr = NULL;
+        return str;
+    }
+
+    str.len = trim(str.ptr, MAX_ID_LEN);
+    return str;
+}
+
+static PyObject *expand_module(
+    const EventStruct const module,
+    const EventStruct *const event_struct,
+    const MODEventStruct *const modevent_struct,
+    const int32_t *const modulevents,
+    const BEEventStruct *const beevent_struct,
+    const CCFEventStruct *const ccfevent_struct,
+    const char *encoding)
+{
+    const int32_t index = module.Index;
+    int32_t num = modevent_struct[index - 1].LastChild + 1;
+    int32_t iLastChild = modevent_struct[index].LastChild;
+    PyObject *row_obj = PyTuple_New(iLastChild - num + 1);
+    for (uint32_t i = num; i <= iLastChild; i++)
+    {
+        int32_t num2 = modulevents[i];
+        EventStruct event = event_struct[abs(num2)];
+        if (event.EventType == MOD_EVENT)
+        {
+            expand_module
+        }
+        else
+        {
+            STRPTR name = FindEventId(event,
+                                      beevent_struct, ccfevent_struct, modevent_struct);
+            if (name.ptr == NULL)
+            {
+                PyErr_Format(PyExc_RuntimeError,
+                             "Can't read event, undefine event type '%u' in mod. event (%u)",
+                             event.EventType, i);
+                Py_DECREF(row_obj);
+                return NULL;
+            }
+            PyObject *name_obj;
+
+            // Test on non negative event
+            if (abs(num2) + num2 > 0)
+            {
+                name_obj = PyUnicode_Decode(name.ptr, name.len, encoding, NULL);
+            }
+            else
+            {
+                char neg_name[MAX_ID_LEN + 1];
+                neg_name[0] = '-';
+                strncpy(&neg_name[1], name.ptr, name.len);
+                name_obj = PyUnicode_Decode(neg_name, name.len + 1, encoding, NULL);
+            }
+            PyTuple_SET_ITEM(row_obj, i - num, name_obj);
+        }
+    }
+    return row_obj;
+}
+
 PyObject *create_mcs(
     const MCSStruct *const mcs_struct,
     const int32_t *const mcsevent_struct,
@@ -7,13 +95,14 @@ PyObject *create_mcs(
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct,
+    const int32_t *const modulevents,
     const char *encoding,
     const uint_fast32_t start,
     const uint_fast32_t end,
     const int with_header,
     const int mod_expand)
 {
-    PyObject *col_obj = PyTuple_New(end-start+with_header);
+    PyObject *col_obj = PyTuple_New(end - start + with_header);
     uint_fast8_t max_mcs_len = 1;
     for (uint_fast32_t row = start; row < end; row++)
     {
@@ -30,46 +119,50 @@ PyObject *create_mcs(
             const int32_t e9 = mcsevent_struct[mcs.FirstEvent + column];
             EventStruct event = event_struct[abs(e9)];
 
-            const uint32_t event_index = event.Index;
-            const EventType event_type = event.EventType;
-
-            const char *name;
-            switch (event_type)
+            const STRPTR name = FindEventId(event,
+                                            beevent_struct, ccfevent_struct, modevent_struct);
+            if (name.ptr == NULL)
             {
-            case BASIC_EVENT:
-                name = beevent_struct[event_index].Name;
-                break;
-            case CCF_EVENT:
-                name = ccfevent_struct[event_index].Name;
-                break;
-            case MOD_EVENT:
-                name = modevent_struct[event_index].Name;
-                break;
-            default:
-                PyErr_Format(PyExc_RuntimeError, "Can't read event, undefine event type '%u' in (%u, %u)", event_type, row, column+1);
+                PyErr_Format(PyExc_RuntimeError,
+                             "Can't read event, undefine event type '%u' in (%u, %u)",
+                             event.EventType, row, column + 1);
+                Py_DECREF(row_obj);
+                Py_DECREF(col_obj);
                 return NULL;
             }
 
-            const Py_ssize_t len = trim(name, MAX_ID_LEN);
             PyObject *name_obj;
-
-            // Test on non negative event
-            if  (abs(e9)+e9>0)
+            if ((mod_expand == 1) && (event.EventType == MOD_EVENT))
             {
-                name_obj = PyUnicode_Decode(name, len, encoding, NULL);
+                name_obj = expand_module(
+                    event,
+                    event_struct,
+                    modevent_struct,
+                    modulevents,
+                    beevent_struct,
+                    ccfevent_struct,
+                    encoding);
             }
             else
             {
-                char neg_name[MAX_ID_LEN+1];
-                neg_name[0]='-';
-                strncpy(&neg_name[1], name, len); 
-                name_obj = PyUnicode_Decode(neg_name, len+1, encoding, NULL);
+                // Test on non negative event
+                if (abs(e9) + e9 > 0)
+                {
+                    name_obj = PyUnicode_Decode(name.ptr, name.len, encoding, NULL);
+                }
+                else
+                {
+                    char neg_name[MAX_ID_LEN + 1];
+                    neg_name[0] = '-';
+                    strncpy(&neg_name[1], name.ptr, name.len);
+                    name_obj = PyUnicode_Decode(neg_name, name.len + 1, encoding, NULL);
+                }
             }
+
             PyTuple_SET_ITEM(row_obj, column + 1, name_obj);
-            //PyTuple_SET_ITEM(row_obj, column + 1, Py_BuildValue("s#", name, len));
         }
 
-        PyTuple_SET_ITEM(col_obj, row+with_header-start, row_obj);
+        PyTuple_SET_ITEM(col_obj, row + with_header - start, row_obj);
     }
     if (with_header)
     {
