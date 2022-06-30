@@ -10,14 +10,14 @@ static PyObject *RSRFile_open(RSRFile *self, PyObject *args, PyObject *kwargs)
 {
     char *path_to_file;
     char *mode = NULL;
-    char *encoding = cp1251;
+    char *encoding = (char*)cp1251;
 
     static char *kwlist[] = {"filepath", "mode", "encoding", NULL};
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|ss", kwlist,
-        &path_to_file, &mode, &encoding))
+                                     &path_to_file, &mode, &encoding))
     {
-        PyErr_SetString(PyExc_ValueError, "Error!");
+        PyErr_SetString(PyExc_ValueError, "Wrong parameters");
         return NULL;
     }
 
@@ -37,7 +37,8 @@ static PyObject *RSRFile_open(RSRFile *self, PyObject *args, PyObject *kwargs)
             m_mode = PROT_READ | PROT_WRITE;
             break;
         default:
-            PyErr_SetString(PyExc_ValueError, "Error open mode value!");
+            PyErr_Format(PyExc_RuntimeError,
+                         "Undefine access mode value '%s'", mode);
             return NULL;
         }
     }
@@ -45,21 +46,21 @@ static PyObject *RSRFile_open(RSRFile *self, PyObject *args, PyObject *kwargs)
     int fp;
     if ((fp = open(path_to_file, f_mode)) == -1)
     {
-        PyErr_SetString(PyExc_FileNotFoundError, "Error!");
+        PyErr_Format(PyExc_FileNotFoundError, "File '%s' not found", path_to_file);
         return NULL;
     }
 
     struct stat fileInfo;
     if (stat(path_to_file, &fileInfo) == -1)
     {
-        PyErr_SetString(PyExc_FileNotFoundError, "Error!");
+        PyErr_SetString(PyExc_FileNotFoundError, "Can't read file stat");
         return NULL;
     }
     // PROT_READ | PROT_WRITE
     uint8_t *mapped = mmap(0, fileInfo.st_size, m_mode, MAP_PRIVATE, fp, 0);
     if (mapped == MAP_FAILED)
     {
-        PyErr_SetString(PyExc_MemoryError, "mapped() error!");
+        PyErr_SetString(PyExc_MemoryError, "Can't map the file");
         return NULL;
     }
     if (f_mode == O_RDONLY)
@@ -73,14 +74,13 @@ static PyObject *RSRFile_open(RSRFile *self, PyObject *args, PyObject *kwargs)
     self->file_size = fileInfo.st_size;
     self->mapped = mapped;
     self->encoding = encoding;
-    //self->encoding = cp1251;
 
     Py_RETURN_NONE;
 }
 
 static PyObject *RSRFile_close(RSRFile *self)
 {
-    if (self->fp != NULL)
+    if (self->fp != -1)
     {
         close(self->fp);
     }
@@ -88,7 +88,7 @@ static PyObject *RSRFile_close(RSRFile *self)
     {
         if (munmap(self->mapped, self->file_size) == -1)
         {
-            PyErr_SetString(PyExc_MemoryError, "munmap() error!");
+            PyErr_SetString(PyExc_MemoryError, "Can't unmap file");
             return NULL;
         }
     }
@@ -116,8 +116,6 @@ static void RSRFile_dealloc(RSRFile *self)
     CHECK_NULL_DECREF(self->EGImpTable);
     CHECK_NULL_DECREF(self->pdf);
     CHECK_NULL_DECREF(self->cdf);
-    CHECK_NULL_DECREF(self->mcs);
-    CHECK_NULL_DECREF(self->mod_mcs);
     CHECK_NULL_DECREF(self->Events);
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
@@ -141,9 +139,9 @@ static PyObject *RSRFile_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
         self->EGImpTable = NULL;
         self->pdf = NULL;
         self->cdf = NULL;
-        self->mcs = NULL;
-        self->mod_mcs = NULL;
         self->Events = NULL;
+
+        self->fp = -1;
     }
     return (PyObject *)self;
 }
@@ -221,7 +219,6 @@ static PyObject *unc_summary_get(RSRFile *self, void *closure)
             PyObject *const result = create_UNCSummary(unc_struct);
             if (result == NULL)
             {
-
                 Py_RETURN_NONE;
             }
             self->UNCSummary = result;
@@ -253,7 +250,7 @@ static PyObject *timedep_summary_get(RSRFile *self, void *closure)
         {
             Py_RETURN_NONE;
         }
-        }
+    }
     Py_INCREF(self->TimeDepSummary);
     return self->TimeDepSummary;
 }
@@ -349,7 +346,6 @@ static PyObject *unc_get(RSRFile *self, const uint_fast8_t type)
     const uint8_t count = self->headers[type].Record;
     if (count > 0)
     {
-
         PyObject *result = PyTuple_New(count + 1);
 
         PyObject *header_obj = PyTuple_New(2);
@@ -562,28 +558,28 @@ static PyObject *eg_im_get(RSRFile *self, void *closure)
 static PyObject *mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
 {
     char *kwlist[] = {"start", "end", "with_header", "mod_expand", NULL};
-    
+
     uint_fast32_t start = 1;
     uint_fast32_t end = 0;
     int with_header = 1;
     int mod_expand = 0;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|IIpp", kwlist,
-        &start, &end, &with_header, &mod_expand))
+                                     &start, &end, &with_header, &mod_expand))
     {
         PyErr_SetString(PyExc_ValueError, "Incorrect parameters");
         return NULL;
     }
 
     const uint_fast32_t count = self->headers[MCSSTRUCT_OFFSET].Record;
-    
+
     if (count > 0)
     {
-        if ((end == 0) || (end>count))
+        if ((end == 0) || (end > count))
         {
             end = count;
         }
-        if (start>end)
+        if (start > end)
         {
             PyErr_SetString(PyExc_ValueError, "End value must be more than start value");
             return NULL;
@@ -612,27 +608,27 @@ static PyObject *mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
 static PyObject *mod_mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
 {
     char *kwlist[] = {"start", "end", "with_header", NULL};
-    
+
     uint_fast32_t start = 1;
     uint_fast32_t end = 0;
     int with_header = 1;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|IIp", kwlist,
-        &start, &end, &with_header))
+                                     &start, &end, &with_header))
     {
         PyErr_SetString(PyExc_ValueError, "Incorrect parameters");
         return NULL;
     }
 
     const uint_fast32_t count = self->headers[MODMCSSTRUCT_OFFSET].Record;
-    
+
     if (count > 0)
     {
-        if ((end == 0) || (end>count))
+        if ((end == 0) || (end > count))
         {
             end = count;
         }
-        if (start>end)
+        if (start > end)
         {
             PyErr_SetString(PyExc_ValueError, "End value must be more than start value");
             return NULL;
@@ -645,7 +641,7 @@ static PyObject *mod_mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
             (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte],
             (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte],
             (const uint32_t *const)&self->mapped[self->headers[7].StartByte],
-            self->encoding,start, end, with_header, 0);
+            self->encoding, start, end, with_header, 0);
 
         if (result == NULL)
         {
@@ -654,8 +650,7 @@ static PyObject *mod_mcs_get(RSRFile *self, PyObject *args, PyObject *kwargs)
         Py_INCREF(result);
         return result;
     }
-        Py_RETURN_NONE;
-    
+    Py_RETURN_NONE;
 }
 
 static PyObject *events_get(RSRFile *self, void *closure)
@@ -702,7 +697,11 @@ static PyObject *events_get(RSRFile *self, void *closure)
                     name = modevent_struct[event_index].Name;
                     break;
                 default:
-                    PyErr_Format(PyExc_RuntimeError, "Can't read event, undefine event type '%u' in (%u)", event_type, i);
+                    PyErr_Format(PyExc_RuntimeError,
+                                 "Can't read event, undefine event type '%u' in (%u)",
+                                 event_type, i);
+                    Py_DECREF(dict_obj);
+                    Py_DECREF(value_obj);
                     return NULL;
                 }
 

@@ -48,16 +48,19 @@ PyObject *create_BEImportanceTable(
             PyTuple_SET_ITEM(row_obj, 1, Py_BuildValue("s", "MOD"));
             break;
         default: /* Error! */
-            PyErr_SetString(PyExc_Exception, "Error. Can't read event id. Undefine event type");
+            PyErr_Format(PyExc_RuntimeError,
+                         "Can't read event, undefine event type '%u' in %u row",
+                         event_type, i + 1);
+            Py_DECREF(row_obj);
+            Py_DECREF(col_obj);
             return NULL;
         }
 
         const Py_ssize_t len = trim(name, MAX_ID_LEN);
 
-
         PyObject *name_obj = PyUnicode_Decode(name, len, encoding, NULL);
         PyTuple_SET_ITEM(row_obj, 0, name_obj);
-        //PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
+        // PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
         PyTuple_SET_ITEM(row_obj, 2, Py_BuildValue("d", imp_struct[i].Value));
         PyTuple_SET_ITEM(row_obj, 3, Py_BuildValue("d", imp_struct[i].FV));
         PyTuple_SET_ITEM(row_obj, 4, Py_BuildValue("d", imp_struct[i].FC));
@@ -101,7 +104,7 @@ PyObject *create_ParamImportanceTable(
 
         PyObject *name_obj = PyUnicode_Decode(name, len, encoding, NULL);
         PyTuple_SET_ITEM(row_obj, 0, name_obj);
-        //PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
+        // PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", name, len));
 
         const ParamType param_type = param_struct[imp_index].PARType;
 
@@ -126,8 +129,12 @@ PyObject *create_ParamImportanceTable(
             PyTuple_SET_ITEM(row_obj, 1, Py_BuildValue("s", "CCFG"));
             break;
         default:
-            PyTuple_SET_ITEM(row_obj, 1, Py_BuildValue("s", "UNDEFINE"));
-            break;
+            PyErr_Format(PyExc_RuntimeError,
+                         "Can't read parameter, undefine parameter type '%u' in %u row",
+                         param_type, i + 1);
+            Py_DECREF(row_obj);
+            Py_DECREF(col_obj);
+            return NULL;
         }
         PyTuple_SET_ITEM(row_obj, 2, Py_BuildValue("d", imp_struct[i].Value));
         PyTuple_SET_ITEM(row_obj, 3, Py_BuildValue("d", imp_struct[i].FV));
@@ -171,7 +178,7 @@ PyObject *ccfg_importance_table(
 
         PyObject *name_obj = PyUnicode_Decode(ccfg.Name, len, encoding, NULL);
         PyTuple_SET_ITEM(row_obj, 0, name_obj);
-        //PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", ccfg.Name, len));
+        // PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", ccfg.Name, len));
         PyTuple_SET_ITEM(row_obj, 1, Py_BuildValue("d", imp_struct[i].FC));
         PyTuple_SET_ITEM(row_obj, 2, Py_BuildValue("d", imp_struct[i].RDF));
         PyTuple_SET_ITEM(row_obj, 3, Py_BuildValue("d", imp_struct[i].RIF));
@@ -211,7 +218,7 @@ PyObject *attr_importance_table(
 
         PyObject *name_obj = PyUnicode_Decode(attr.Name, len, encoding, NULL);
         PyTuple_SET_ITEM(row_obj, 0, name_obj);
-        //PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", attr.Name, len));
+        // PyTuple_SET_ITEM(row_obj, 0, Py_BuildValue("s#", attr.Name, len));
         PyTuple_SET_ITEM(row_obj, 1, Py_BuildValue("d", imp.FC));
         PyTuple_SET_ITEM(row_obj, 2, Py_BuildValue("d", imp.RDF));
         PyTuple_SET_ITEM(row_obj, 3, Py_BuildValue("d", imp.RIF));

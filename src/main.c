@@ -43,6 +43,7 @@ PyMODINIT_FUNC PyInit_rsrfile(void)
 
     if (PyType_Ready(&RSRFileType) < 0)
     {
+        Py_DECREF(m);
         return NULL;
     }
 

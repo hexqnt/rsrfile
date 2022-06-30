@@ -34,8 +34,6 @@ typedef struct
     PyObject *EGImpTable;
     PyObject *pdf;
     PyObject *cdf; 
-    PyObject *mcs; 
-    PyObject *mod_mcs; 
     PyObject *Events;
     PyObject *filepath;
     PyObject *mode;

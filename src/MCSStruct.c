@@ -18,13 +18,13 @@ static const STRPTR FindEventId(
     switch (event.EventType)
     {
     case BASIC_EVENT:
-        str.ptr = beevent_struct[event.Index].Name;
+        str.ptr = (char*)beevent_struct[event.Index].Name;
         break;
     case CCF_EVENT:
-        str.ptr = ccfevent_struct[event.Index].Name;
+        str.ptr = (char*)ccfevent_struct[event.Index].Name;
         break;
     case MOD_EVENT:
-        str.ptr = modevent_struct[event.Index].Name;
+        str.ptr = (char*)modevent_struct[event.Index].Name;
         break;
     default:
         str.ptr = NULL;
@@ -91,7 +91,7 @@ static PyObject *expand_module(
                 strncpy(&neg_name[1], name.ptr, name.len);
                 name_obj = PyUnicode_Decode(neg_name, name.len + 1, encoding, NULL);
             }
-            Set_Add(set, name_obj);
+            PySet_Add(set, name_obj);
         }
     }
     return set;
