@@ -7,7 +7,7 @@ typedef struct
 } STRPTR;
 
 static const STRPTR FindEventId(
-    const EventStruct const event,
+    const EventStruct event,
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
     const MODEventStruct *const modevent_struct)
@@ -31,13 +31,13 @@ static const STRPTR FindEventId(
         return str;
     }
 
-    str.len = trim(str.ptr, MAX_ID_LEN);
+    str.len = trim_str_size(str.ptr, MAX_ID_LEN);
     return str;
 }
 
 static PyObject *expand_module(
     PyObject *set,
-    const EventStruct const module,
+    const EventStruct module,
     const EventStruct *const event_struct,
     const MODEventStruct *const modevent_struct,
     const int32_t *const modulevents,
@@ -49,7 +49,7 @@ static PyObject *expand_module(
     int32_t num = modevent_struct[index - 1].LastChild + 1;
     int32_t iLastChild = modevent_struct[index].LastChild;
     PyObject *row_obj = PyTuple_New(iLastChild - num + 1);
-    for (uint32_t i = num; i <= iLastChild; i++)
+    for (uint32_t i = abs(num); i <= (uint32_t)abs(iLastChild); i++)
     {
         int32_t num2 = modulevents[i];
         EventStruct event = event_struct[abs(num2)];
@@ -86,7 +86,7 @@ static PyObject *expand_module(
             }
             else
             {
-                char neg_name[MAX_ID_LEN + 1];
+                char neg_name[name.len + 1];
                 neg_name[0] = '-';
                 strncpy(&neg_name[1], name.ptr, name.len);
                 name_obj = PyUnicode_Decode(neg_name, name.len + 1, encoding, NULL);
@@ -162,7 +162,7 @@ PyObject *create_mcs(
                 }
                 else
                 {
-                    char neg_name[MAX_ID_LEN + 1];
+                    char neg_name[name.len + 1];
                     neg_name[0] = '-';
                     strncpy(&neg_name[1], name.ptr, name.len);
                     name_obj = PyUnicode_Decode(neg_name, name.len + 1, encoding, NULL);

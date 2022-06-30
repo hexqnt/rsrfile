@@ -1,3 +1,5 @@
+#ifndef LARGENUMSTRUCT
+#define LARGENUMSTRUCT
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -13,3 +15,6 @@ extern PyTypeObject LargeNumType;
 extern PyStructSequence_Desc LargeNumType_desc;
 
 PyObject *create_LargeNum(LargeNumStruct *ln_struct);
+
+
+#endif /* LARGENUMSTRUCT */

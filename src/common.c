@@ -22,7 +22,7 @@ PyObject *DateTimeFromString(char *str)
     return dt;
 }
 
-const size_t trim(const char *str, size_t len)
+size_t trim_str_size(const char *str, size_t len)
 {
     len--;
     while ((*(str + len) == ' ') || *(str + len) == (char)0)

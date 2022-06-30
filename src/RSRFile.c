@@ -57,7 +57,7 @@ static PyObject *RSRFile_open(RSRFile *self, PyObject *args, PyObject *kwargs)
         return NULL;
     }
     // PROT_READ | PROT_WRITE
-    uint8_t *mapped = mmap(0, fileInfo.st_size, m_mode, MAP_PRIVATE, fp, 0);
+    uint8_t *mapped = (uint8_t*)mmap(0, fileInfo.st_size, m_mode, MAP_PRIVATE, fp, 0);
     if (mapped == MAP_FAILED)
     {
         PyErr_SetString(PyExc_MemoryError, "Can't map the file");
@@ -663,16 +663,16 @@ static PyObject *events_get(RSRFile *self, void *closure)
             PyObject *dict_obj = PyDict_New();
 
             const EventStruct *const events =
-                &self->mapped[self->headers[EVENT_OFFSET].StartByte];
+                (const EventStruct *const)&self->mapped[self->headers[EVENT_OFFSET].StartByte];
 
             const BEEventStruct *const beevent_struct =
-                &self->mapped[self->headers[BEVENT_OFFSET].StartByte];
+               (const BEEventStruct *const)&self->mapped[self->headers[BEVENT_OFFSET].StartByte];
 
             const CCFEventStruct *const ccfevent_struct =
-                &self->mapped[self->headers[CCFEVENT_OFFSET].StartByte];
+               (const CCFEventStruct *const)&self->mapped[self->headers[CCFEVENT_OFFSET].StartByte];
 
             const MODEventStruct *const modevent_struct =
-                &self->mapped[self->headers[MODEVENT_OFFSET].StartByte];
+                (const MODEventStruct *const)&self->mapped[self->headers[MODEVENT_OFFSET].StartByte];
 
             for (uint32_t i = 1; i < count; i++)
             {
@@ -705,7 +705,7 @@ static PyObject *events_get(RSRFile *self, void *closure)
                     return NULL;
                 }
 
-                const Py_ssize_t len = trim(name, MAX_ID_LEN);
+                const Py_ssize_t len = trim_str_size(name, MAX_ID_LEN);
                 PyDict_SetItem(dict_obj, Py_BuildValue("s#", name, len), value_obj);
             }
             self->Events = dict_obj;
@@ -798,7 +798,7 @@ static PyMethodDef RSRFile_methods[] = {
 
 PyTypeObject RSRFileType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-        .tp_name = "rsrfile.RSRFile",
+    .tp_name = "rsrfile.RSRFile",
     .tp_doc = PyDoc_STR("RSR File objects"),
     .tp_basicsize = sizeof(RSRFile),
     .tp_itemsize = 0,

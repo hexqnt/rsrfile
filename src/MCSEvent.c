@@ -5,9 +5,7 @@ PyTypeObject MCSEventType;
 PyStructSequence_Field MCSEventType_fields[] = {
     {"Mean", "Numerical value based on the reliability model and the parameters assigned to the event"},
     {"fW", ""},
-    {
-        NULL,
-    },
+    {NULL,},
 };
 
 PyStructSequence_Desc MCSEventType_desc = {

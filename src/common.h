@@ -6,5 +6,6 @@
 
 PyObject *DateTimeFromString(char *str);
 
-const size_t trim(const char *str, size_t len);
+size_t trim_str_size(const char *str, size_t len);
+
 #endif /* COMMON */
