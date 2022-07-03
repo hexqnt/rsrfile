@@ -6,7 +6,7 @@
 //#include <stdlib.h>
 #include "structures.h"
 #include "common.h"
-
+#include <stdbool.h>
 
 PyObject *create_mcs(
     const MCSStruct *const mcs_struct,

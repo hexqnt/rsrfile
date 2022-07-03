@@ -43,7 +43,8 @@ static PyObject *expand_module(
     const int32_t *const modulevents,
     const BEEventStruct *const beevent_struct,
     const CCFEventStruct *const ccfevent_struct,
-    const char *encoding)
+    const char *encoding,
+    bool negative)
 {
     const int32_t index = module.Index;
     int32_t num = modevent_struct[index - 1].LastChild + 1;
@@ -53,6 +54,7 @@ static PyObject *expand_module(
     {
         int32_t num2 = modulevents[i];
         EventStruct event = event_struct[abs(num2)];
+        negative = (((abs(num2) + num2) > 0) != negative);
         if (event.EventType == MOD_EVENT)
         {
             expand_module(
@@ -63,7 +65,8 @@ static PyObject *expand_module(
                     modulevents,
                     beevent_struct,
                     ccfevent_struct,
-                    encoding);
+                    encoding,
+                    negative);
         }
         else
         {
@@ -80,7 +83,7 @@ static PyObject *expand_module(
             PyObject *name_obj;
 
             // Test on non negative event
-            if (abs(num2) + num2 > 0)
+            if (negative)
             {
                 name_obj = PyUnicode_Decode(name.ptr, name.len, encoding, NULL);
             }
@@ -128,6 +131,8 @@ PyObject *create_mcs(
             const int32_t e9 = mcsevent_struct[mcs.FirstEvent + column];
             EventStruct event = event_struct[abs(e9)];
 
+            bool negative = ((abs(e9) + e9) > 0);
+
             const STRPTR name = FindEventId(event,
                                             beevent_struct, ccfevent_struct, modevent_struct);
             if (name.ptr == NULL)
@@ -151,12 +156,13 @@ PyObject *create_mcs(
                     modulevents,
                     beevent_struct,
                     ccfevent_struct,
-                    encoding);
+                    encoding,
+                    negative);
             }
             else
             {
                 // Test on non negative event
-                if (abs(e9) + e9 > 0)
+                if (negative)
                 {
                     name_obj = PyUnicode_Decode(name.ptr, name.len, encoding, NULL);
                 }
