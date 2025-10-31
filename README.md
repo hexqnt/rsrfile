@@ -1,4 +1,9 @@
 # rsrfile
+> The repository was moved to read-only mode on October 31, 2025.
+
+The project is no longer supported due to loss of access to the underlying software.
+
+---
 Python module for read RSR files (RiskSpectrum PSA result files)
 
 [![image](https://img.shields.io/pypi/v/rsrfile.svg)](https://pypi.python.org/pypi/rsrfile/)
